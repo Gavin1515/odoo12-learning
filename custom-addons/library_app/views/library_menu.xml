@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- 菜单树中的项目仅在含有可见子菜单项时才会显示。
+         底层包含窗口操作视图的菜单项仅当用户拥有该模型访问权限时才可见。-->
+    <menuitem id="menu_library" name="Library"/>
+</odoo>

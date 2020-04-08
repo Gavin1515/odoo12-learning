@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--图书应用分类-->
+    <record id="module_library_category" model="ir.module.category">
+        <field name="name">Library</field>
+    </record>
+
+    <!--图书用户组，继承自基础用户组-->
+    <record id="library_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_library_category"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!--图书管理员组，继承自图书用户组-->
+    <record id="library_group_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_library_category"/>
+        <field name="implied_ids" eval="[(4, ref('library_group_user'))]"/>
+        <field name="user_ids"
+               eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

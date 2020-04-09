@@ -11,5 +11,6 @@
         # csv文件的文件名必须和要导入的目标模型名一致（除了.csv后缀）
         'security/ir.model.access.csv',
         'views/library_menu.xml',
+        'views/book_view.xml',
     ]
 }

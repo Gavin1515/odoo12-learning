@@ -8,7 +8,7 @@ from odoo.tests.common import TransactionCase
 class TestBook(TransactionCase):
     def setUp(self, *args, **kwargs):
         result = super().setUp(*args, **kwargs)
-        # 切换到admin用户测试该用户能否创建书，间接的测试了初始化安全组时是否正确加入了该用户
+        # 切换到admin用户测试该用户能否创建书，间接的测试了初始化安全组时是否正确加入了该用户，以及library.book是否正确添加了访问权限
         self.env = self.env(user=self.env.ref('base.user_admin'))
         self.book = self.env['library.book']
         self.book_ode = self.book.create({
@@ -21,3 +21,6 @@ class TestBook(TransactionCase):
     def test_create(self):
         #"Test Books are active by default"
         self.assertEqual(self.book_ode.active, True)
+
+    def test_check_isbn(self):
+        self.assertTrue(self.book_ode._check_isbn)

@@ -9,8 +9,8 @@
                 <header>
                     <button name="action_check_isbn" type="object" string="Check ISBN"/>
                 </header>
-		<sheet>
-		   <group>
+                <sheet>
+                   <group>
                         <group>
                             <field name="name"/>
                             <field name="author_ids" widget="many2many_tags"/>
@@ -49,6 +49,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="publisher_id"/>
+                <!--在odoo12中，<filter>现在要求包含name=”…”属性，唯一标识每个过滤器，如果不写，验证会失败，模块将无法安装或升级。-->
                 <filter name="filter_active" string="Active" domain="[('active','=',True)]"/>
                 <filter name="filter_inactive" string="Inactive" domain="[('active','=',False)]"/>
             </search>

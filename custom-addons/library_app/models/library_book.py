@@ -10,7 +10,7 @@ class Book(models.Model):
     _description = 'Book'
 
     name = fields.Char(string='Title', required=True)
-    idbn = fields.Char(string='ISBN')
+    isbn = fields.Char(string='ISBN')
     active = fields.Boolean(string='Active?', default=True)
     date_published = fields.Date()
     image = fields.Binary(string='Cover')

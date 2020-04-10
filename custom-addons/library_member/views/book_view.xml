@@ -3,7 +3,7 @@
     <record id="view_form_book_extend" model="ir.ui.view">
         <field name="name">Book: add Is Available? field</field>
         <field name="model">library.book</field>
-        <field name="inherit" ref="library_app.view_form_book"/>
+        <field name="inherit_id" ref="library_app.view_form_book"/>
         <field name="arch" type="xml">
             <!--除string 属性外的任意 XML 元素和属性可作为继承节点。
                 在9.0以前，string 属性(显示标签文本）也可作为继承定位符。在9.0之后则不再允许。
@@ -12,14 +12,19 @@
                 position属性可以使用的属性值包括：inside、before、after、replace、attributes。
                 当使用replace时，可以使用$0代表被替换的元素，然后使用日他标记包裹被替换的元素，比如<h1>$0</h1>。
                 此外odoo12还新增了一个特性：position=”move”，它的含义是把有该属性的元素移动到父元素的指定位置。
-                如下，是把my_field字段从其他位置移动到target_field的后面
+                如下，是把my_field字段从其他位置移动到target_field的后面.
                 <field name="target_field" position="after">
                     <field name="my_field" position="move"/>
                 </field>
                 -->
             <field name="isbn" position="after">
-                <field name="ia_available"/>
-            </field>
+		<field name="is_available"/>
+		<field name="publisher_id" position="move"/>
+	    </field>
+
+	    <!--使用<record>元素更新原有记录时，可以选择要执行写操作的字段，但对 shortcut 元素则并非如此，
+	        如<menuitem>和<act_window>。它们需要提供所有的属性，漏写任何一个都会将对应字段置为空值。
+                但可使用<record>为原本通过 shortcut 元素创建的字段设置值。-->
         </field>
     </record>
 </odoo>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <template id="book_list_template" name="Book list">
+    <template id="book_list_template" name="Book List">
         <div id="wrap" class="container">
             <h1>Books</h1>
             <!--循环controller返回的books记录集变量-->

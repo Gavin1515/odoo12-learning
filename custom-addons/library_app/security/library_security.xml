@@ -20,13 +20,13 @@
         <field name="users"
                eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
-    <!--设置行记录规则，禁止雇员组的用户访问active为false的图书-->
+    <!--设置行记录规则，禁止雇员组的用户访问active为false的图书，即使使用搜索功能也无法访问-->
     <data noupdate="1">
-	<record id="book_user_rule" model="ir.rule">
-		<field name="name">Library Book User Access</field>
-		<field name="model_id" ref="model_library_book"/>
-		<field name="groups" eval="[(4, ref('library_group_user'))]"/>
-		<field name="domain_force">[('active', '=', True)]</field>
-	</record>
-</data>
+        <record id="book_user_rule" model="ir.rule">
+            <field name="name">Library Book User Access</field>
+            <field name="model_id" ref="model_library_book"/>
+            <field name="groups" eval="[(4, ref('library_group_user'))]"/>
+            <field name="domain_force">[('active', '=', True)]</field>
+        </record>
+    </data>
 </odoo>

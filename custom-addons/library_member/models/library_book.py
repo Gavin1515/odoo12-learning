@@ -29,4 +29,5 @@ class Book(models.Model):
             check = total % 11
             return digits[-1] == check
         else:
+            # 从odoo11开始，super()无需传入类名和self两个参数
             return super()._check_isbn()

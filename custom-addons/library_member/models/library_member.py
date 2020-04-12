@@ -23,5 +23,5 @@ class Member(models.Model):
             3.父字段中希望暴露的特定字段的关联字段
         有时这比完整的代理继承更为合适。例如res.company并没有继承res.partner，但使用到了其中好几个字段。
     '''
-    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner'
+    partner_id = fields.Many2one(comodel_name='res.partner', string='Partner',
                                  delegate=True, ondelete='cascade', required=True)

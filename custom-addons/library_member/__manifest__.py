@@ -7,7 +7,8 @@
     'name': 'Library Members',
     'description': 'Manage people who will be able to borrow books.',
     'author': 'Gavin',
-    'depends': ['library_app'],
+    # 继承mail模块以提供讨论和待办事项功能
+    'depends': ['library_app', 'mail'],
     'application': False,
     'data': [
         'security/ir.model.access.csv',

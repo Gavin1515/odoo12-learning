@@ -21,6 +21,13 @@
                     <field name="email"/>
                     <field name="card_number"/>
                 </group>
+
+                <!-- mail mixin fields -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" wisget="mail.activity"/>
+                    <field name="message_ids" wisget="mail.thread"/>
+                </div>
             </form>
         </field>
     </record>

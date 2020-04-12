@@ -8,6 +8,7 @@ from odoo import models, fields
 class Member(models.Model):
     _name = 'library.member'
     _description = 'Library Member'
+    _inherit = ['mail.thread','mail.activity.mixin']
 
     card_number = fields.Char(string='Card Number')
     '''

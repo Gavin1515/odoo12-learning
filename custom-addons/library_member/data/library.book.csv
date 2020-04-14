@@ -1,0 +1,3 @@
+"id","name","date_published","author_ids/id","publisher_id/id","isbn","is_available"
+"library_book_ode12","Odoo12 Development Essentials","2019-03-01",res_partner_packt,res_partner_daniel,"879-1-78439-279-6","True"
+"library_book_odc12","Odoo12 Development CookBook","2019-01-01","res_partner_alexandre,res_partner_holger",res_partner_packt,"879-1-78439-279-6","False"

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <!-- Modify Group name -->
+    <!--应当注意在用于修改已有记录时，简写元素（menuitem、act_window等）会覆盖所有字段。
+        这与仅写入所提供字段的<record>基础元素不同。因此在需修改用户界面元素指定字段时，应使用<record>元素。-->
     <record id="library_app.library_group_user" model="res.groups">
         <field name="name">Librarian</field>
     </record>

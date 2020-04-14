@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--Odoo 12中的修改：点击开发者菜单中的View Metadata时，现在在弹出的对话框中 XML ID 下面还会显示No Update的值。
+     并且在该处可通过点击来修改该标记的值。-->
+<odoo noupdate="1">
+    <!-- Data to load -->
+    <record model="res.partner" id="res_partner_huxley">
+        <field name="name">Aldous Huxley</field>
+    </record>
+
+    <record model="library.book" id="library_book_bnw">
+        <field name="name">Brave New World</field>
+        <!--(0, _ , {‘field’: value})新建一条记录并将其与之关联
+            (1, id, {‘field’: value})更新已关联记录的值
+            (2, id, _)移除关联并删除 id 关联的记录
+            (3, id, _)移除关联但不删除 id 关联的记录。通常使用它来删除many-to-many字段的关联记录
+            (4, id, _)关联已存在记录，仅适用于many-to-many字段
+            (5, _, _)删除所有关联，但不删除关联记录
+            (6, _, [ids])替换已关联记录列表为此处的列表
+            上述下划线_字符代表非关联值，通常填入 o 或 False。
+            后面的非关联值可以放心地省略掉，如(4, id, _) 可使用(4, id)-->
+        <field name="author_ids"
+               eval="[(4, ref('res_partner_huxley'))]" />
+        <field name="date_published">1932-01-01</field>
+        <!--date和datetime类型的字段可以通过eval表达式求值
+        <field name="date_published"
+            eval="(datetime.now() + timedelta(-1))" />
+         -->
+    </record>
+
+    <record model="library.member" id="library_member_gavin">
+        <field name="name">Gavin</field>
+        <field name="email">1515984717@qq.com</field>
+        <field name="card_number">1515984717</field>
+    </record>
+</odoo>

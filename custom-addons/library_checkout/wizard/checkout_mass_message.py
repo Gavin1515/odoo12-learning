@@ -37,7 +37,7 @@ class CheckoutMassMessage(models.TransientModel):
             raise exceptions.UserError('请至少选择一条借阅记录来发送消息!')
         if not self.message_body:
             raise exceptions.UserError('请填写要发送的消息体!')
-        
+
         for checkout in self.checkout_ids:
             checkout.message_post(subject=self.message_subject, body=self.message_body,
                                   subtype="mail.mt_comment")
@@ -57,5 +57,6 @@ class CheckoutMassMessage(models.TransientModel):
             让方法至少返回一个 True 值是一个很好的编程实践。
             主要是因为有些XML-RPC协议不支持 None 值，所以对于这些协议就用不了那些方法了。
             在实际工作中，我们可能不会遇到这个问题，因为网页客户端使用JSON-RPC而不是XML-RPC，但这仍是一个可遵循的良好实践。
+            开启测试仅需在安装或升级(-i或-u)模块时在 Odoo 服务启动命令中添加– test-enable选项即可。
         '''
         return True

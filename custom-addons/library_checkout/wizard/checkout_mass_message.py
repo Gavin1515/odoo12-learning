@@ -3,7 +3,9 @@
 
 # Author: Gavin
 
-from odoo import models,fields,api
+from odoo import models,fields,api,exceptions
+import logging
+_logger = logging.getLogger(__name__)
 
 class CheckoutMassMessage(models.TransientModel):
     _name = 'library.checkout.massmessage'
@@ -28,9 +30,29 @@ class CheckoutMassMessage(models.TransientModel):
     @api.multi
     def button_send(self):
         self.ensure_one()
+        if not self.checkout_ids:
+            '''Odoo 9中的修改: 引用了UserError异常来替换掉Warning异常，
+                淘汰掉 Warning 异常的原因是因为它与 Python 内置异常冲突，但 Odoo 保留了它以保持向后兼容性。
+            '''
+            raise exceptions.UserError('请至少选择一条借阅记录来发送消息!')
+        if not self.message_body:
+            raise exceptions.UserError('请填写要发送的消息体!')
+        
         for checkout in self.checkout_ids:
             checkout.message_post(subject=self.message_subject, body=self.message_body,
                                   subtype="mail.mt_comment")
+
+        '''
+            注意我们没有在日志消息中使用 Python 内插字符串。我们没使用_logger.info(‘Hello %s’ % ‘World’)，
+            而是使用了类似_logger.info(‘Hello %s’, ‘World’)。不使用内插使我们的代码少执行一个任务，让日志记录更为高效。
+            因此我们应一直为额外的日志参数传入变量。
+            
+            服务器日志的时间戳总是使用 UTC 时间。因此打印的日志消息中也是 UTC 时间。
+            你可能会觉得意外 ，但 Odoo服务内部都是使用 UTC 来处理日期的.
+            
+            Odoo日志级别默认是info，而且可以通过命令行参数--loghandler=模块全路径:日志级别 来设置模块的日志级别。
+        '''
+        _logger.info('Send %d message to %s', len(self.checkout_ids), str(self.checkout_ids))
         '''
             让方法至少返回一个 True 值是一个很好的编程实践。
             主要是因为有些XML-RPC协议不支持 None 值，所以对于这些协议就用不了那些方法了。

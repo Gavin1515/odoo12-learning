@@ -26,3 +26,16 @@ odoo.tools.DEFAULT_SERVER_DATETIME_FORMAT<br>
 self.env.cr.execute(SQL, Parames)
 还可以使用数据操纵语言(DML) 来运行指令，如UPDATE和INSERT。因为服务器保留数据缓存，这可能导致与数据库中实际数据的不一致。<br>
 出于这个原因，在使用原生DML后，应使用self.env.cache.invalidate()清除缓存。
+
+## Odoo装饰器
+1.如果模型方法没有添加装饰器，默认就使用@api.multi。<br>
+2.@api.one的返回值有些搞怪，它返回一个列表，而不实际方法返回的数据结构。比如方法代码如果返回字典，实际返回值是一个字典值列表。<br>
+这种误导性也是该方法被弃用的主要原因。<br>
+3.@api.model装饰的方法无法用于用户界面按钮，在这种情况下，应使用@api.multi。<br>
+4.通过为字段添加属性on_change=”0″可在特定表单中关闭 on change 行为，比如<field name=”fld1″ on_change=”0″ />
+
+## ORM方法
+1.Odoo 12中的修改：create()现在也可批量创建数据，这通过把单个字典对象修改为字典对象列表来传参进行实现。
+这由带有@api.model_create_multi装饰器的create() 方法来进行支持。
+2.name_create(name)创建一条仅带有要使用的标题名的新记录。它用于在 UI 中快速创建(quick-create)功能，
+这里我们可以仅提供名称快速创建一条关联记录。可扩展来为通过此功能创建的新记录提供指定默认值。

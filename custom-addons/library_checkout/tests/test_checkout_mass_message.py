@@ -25,6 +25,9 @@ class TestWizard(TransactionCase):
     '''
         测试用例方法名必须以test_为前缀。这些方法被自动发现，该前缀就是用于辨别是否为实施测试用例的方法。
         根据测试方法名的顺序来运行。
+        
+        如果使用workers参数开启多线程的话，会出现如下测试失败的警告：
+        WARNING ? odoo.service.server: Unit testing in workers mode could fail; use --workers 0.
     '''
     def test_button_send(self):
         # Send button should create messages on Checkouts

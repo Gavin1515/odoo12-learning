@@ -39,3 +39,9 @@ self.env.cr.execute(SQL, Parames)
 这由带有@api.model_create_multi装饰器的create() 方法来进行支持。
 2.name_create(name)创建一条仅带有要使用的标题名的新记录。它用于在 UI 中快速创建(quick-create)功能，
 这里我们可以仅提供名称快速创建一条关联记录。可扩展来为通过此功能创建的新记录提供指定默认值。
+
+## odoo进程操作
+1.查看odoo进程：ps ax | grep odoo-bin
+2.打印odoo进程的线程及代码运行调用栈细节： kill-3 <PID>
+3.重载odoo服务：kill -HUP <PID>
+4.关闭odoo进程：kill -TERM <PID>或 kill -INT <PID>

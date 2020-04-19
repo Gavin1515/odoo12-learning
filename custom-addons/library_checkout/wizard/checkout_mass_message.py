@@ -29,6 +29,20 @@ class CheckoutMassMessage(models.TransientModel):
 
     @api.multi
     def button_send(self):
+        # 插入调式断点，进入断点后可以在命令行窗口执行如下快捷命令：
+        '''
+            h (help) 显示可用 pdb 命令的汇总
+            p (print) 运行并打印表达式
+            pp (pretty print) 有助于打印数据结构，如字典或列表
+            l (list) 列出下一步要执行的代码及周边代码
+            n (next) 进入下一条命令
+            s (step) 进入当前命令
+            c (continue)继续正常执行
+            u (up) 在执行栈中上移
+            d (down)在执行栈中下移
+            bt (backtrace)显示当前执行栈
+        '''
+        import pdb; pdb.set_trace()
         self.ensure_one()
         if not self.checkout_ids:
             '''Odoo 9中的修改: 引用了UserError异常来替换掉Warning异常，

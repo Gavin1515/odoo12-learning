@@ -27,9 +27,19 @@
          -->
     </record>
 
-    <record model="library.member" id="library_member_gavin">
-        <field name="name">Gavin</field>
-        <field name="email">1515984717@qq.com</field>
-        <field name="card_number">1515984717</field>
+    <record model="library.member" id="library_member_zhangsan">
+        <field name="name">ZhangSan</field>
+        <field name="email">ZhangSan@qq.com</field>
+        <field name="card_number">zhangsan</field>
+    </record>
+    <record model="library.member" id="library_member_lisi">
+        <field name="name">LiSi</field>
+        <field name="email">LiSi@qq.com</field>
+        <field name="card_number">lisi</field>
+    </record>
+    <record model="library.member" id="library_member_wangwu">
+        <field name="name">WangWu</field>
+        <field name="email">WangWu@qq.com</field>
+        <field name="card_number">wangwu</field>
     </record>
 </odoo>

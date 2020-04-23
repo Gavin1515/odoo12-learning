@@ -45,3 +45,56 @@ self.env.cr.execute(SQL, Parames)
 2.打印odoo进程的线程及代码运行调用栈细节： kill-3 <PID>
 3.重载odoo服务：kill -HUP <PID>
 4.关闭odoo进程：kill -TERM <PID>或 kill -INT <PID>
+
+
+## Odoo External API
+在python命令行通过xmlrpc连接Odoo API
+C\Users\Gavin>python
+Python 3.5.2 (v3.5.2:4def2a2901a5, Jun 25 2016, 22:18:55) [MSC v.1900 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+<code>
+<pre>
+>>> from xmlrpc import client
+>>> srv = "http://192.168.99.116:8069"
+>>> common = client.ServerProxy('%s/xmlrpc/2/common' % srv)
+>>> common.version()
+{'server_version': '12.0', 'server_version_info': [12, 0, 0, 'final', 0, ''], 'server_serie': '12.0', 'protocol_version': 1}
+>>> common
+<ServerProxy for 192.168.99.116:8069/xmlrpc/2/common>
+>>> common.authenticate('dev12', 'admin', 'admin', {}) 最后一个参数是客户端User Agent，必须但可以为{}
+2
+调用服务端方法：
+>>> api = client.ServerProxy('%s/xmlrpc/2/object' % srv)
+>>> api.execute_kw('dev12',2,'admin','res.partner','search_count',[[]])
+>>> domain = [('is_company','=',True)]
+>>> api.execute_kw('dev12',2,'admin','res.partner','search',[domain])
+[14, 10, 11, 15, 12, 13, 9, 1]
+xmlrpc不能使用browse方法，只能使用read方法，主要这时Many2one的country_id返回一个元组（id，name）。
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'read', [[14]], {'fields': ['id', 'name', 'country_id']})
+[{'country_id': [48, 'China'], 'id': 14, 'name': 'Azure Interior'}]
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'read', [[14,15]], {'fields': ['id', 'name', 'country_id']})
+[{'country_id': [48, 'China'], 'id': 14, 'name': 'Azure Interior'}, {'country_id': [233, 'United States'], 'id': 15, 'name': 'Lumber Inc'}]
+>>> api.execute_kw('dev12',2,'admin','res.partner','search_read',[domain],{'fields': ['id','name','country_id']})
+[{'country_id': [48, 'China'], 'id': 14, 'name': 'Azure Interior'}, 
+ {'country_id': [233, 'United States'], 'id': 10, 'name': 'Deco Addict'}, 
+ {'country_id': [233, 'United States'], 'id': 11, 'name': 'Gemini Furniture'}, 
+ {'country_id': [233, 'United States'], 'id': 15, 'name': 'Lumber Inc'}, 
+ {'country_id': [233, 'United States'], 'id': 12, 'name': 'Ready Mat'}, 
+ {'country_id': [233, 'United States'], 'id': 13, 'name': 'The Jackson Group'}, 
+ {'country_id': [233, 'United States'], 'id': 9, 'name': 'Wood Corner'}, 
+ {'country_id': [233, 'United States'], 'id': 1, 'name': 'YourCompany'}
+]
+>>> x = api.execute_kw('dev12',2,'admin','res.partner','create',[{'name':'test api user'}]) 创建成功后立马出现在系统中
+>>> api.execute_kw('dev12',2, 'admin','res.partner','write',[[x],{'name': 'test api user2'}])
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'read', [[x], ['id', 'name']])
+[{'id': 120, 'name': 'test api user2'}]
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'read', [[x]], {'fields': ['id', 'name']})
+[{'id': 120, 'name': 'test api user2'}]
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'unlink', [[x]])
+True
+>>> api.execute_kw('dev12', 2, 'admin', 'res.partner', 'read', [[x]], {'fields': ['id', 'name']})
+[]
+</pre>
+</code>
+XMLRPC本身不支持None值，因此在odoo后端方法中必须有return语句返回一个非None的值，但有XMLRPC的扩展可以支持None值。
+模型的所有方法对XMLRPC暴露，但下划线（_）开头的方法除外，它们被认为是私有方法。

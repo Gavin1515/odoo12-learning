@@ -18,7 +18,7 @@
             <form>
                 <group>
                     <field name="name"/>
-                    <field name="email"/>
+                    <field name="email" widget="email"/>
                     <field name="card_number"/>
                 </group>
 

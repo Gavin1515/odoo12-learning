@@ -18,8 +18,9 @@
         </field>
     </record>
 
+    <!--multi="True"表示只出现在tree视图上（默认为false，同时出现在tree和form）-->
     <act_window id="action_checkout_message" name="Send Message"
                 view_mode="form" view_type="form"
                 src_model="library.checkout" res_model="library.checkout.massmessage"
-                target="new" multi="True"/>
+                target="new" multi="True" key2="client_action_multi"/>
 </odoo>

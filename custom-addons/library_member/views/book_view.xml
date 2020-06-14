@@ -18,9 +18,9 @@
                 </field>
                 -->
             <field name="isbn" position="after">
-		<field name="is_available"/>
-		<field name="publisher_id" position="move"/>
-	    </field>
+                <field name="is_available"/>
+                <field name="publisher_id" position="move"/>
+            </field>
 
 	    <!--使用<record>元素更新原有记录时，可以选择要执行写操作的字段，但对 shortcut 元素则并非如此，
 	        如<menuitem>和<act_window>。它们需要提供所有的属性，漏写任何一个都会将对应字段置为空值。

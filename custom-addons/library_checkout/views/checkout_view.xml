@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!--state是不存储的字段，可以直接用在domain里面?-->
+    <act_window id="action_other_checkouts_button" name="Open Other Checkouts"
+                view_mode="tree,form" res_model="library.checkout"
+                domain="[('member_id','=', default_member_id),('state','in',['open']),('id','!=',active_id)]"/>
+
     <record id="view_tree_checkout" model="ir.ui.view">
         <field name="name">Checkout Tree</field>
         <field name="model">library.checkout</field>
         <field name="arch" type="xml">
-            <tree>
-                <field name="request_date"/>
-                <field name="member_id"/>
-                <field name="user_id"/>
+            <!--行文本颜色和字体可根据 Python 表达式计算结果来动态变化。这通过decoration–NAME属性带上计算字段属性的表达式来实现。
+            NAME可以是bf或it，分别表示粗体和斜体，也可以是其它Bootstrap文本上下文颜色：
+            danger, info, muted, primary, success或warning。
+            decoration-NAME 属性在 Odoo 9中引入。在 Odoo 8中使用是 colors 和 fonts 属性。-->
+            <tree decoration-muted="state in ['done','cancel']" decoration-bf="state=='open'">
+                <field name="state" invisible="True" />
+                <field name="request_date" />
+                <field name="member_id" />
+                <field name="checkout_date" />
+                <field name="stage_id" />
+                <field name="num_books" sum="# Books" />
             </tree>
         </field>
     </record>
@@ -17,14 +29,127 @@
         <field name="model">library.checkout</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <!--domain 或 attrs 表达式中使用的字段必须在视图中加载，作用于它们的<field>元素。
+                    如果字段不对用户可见，则必须以不可见字段元素对其进行加载。
+
+                    a简单的attrs属性可以使用states属性代替：states="open,cancel"-->
+                    <field name="state" invisible="True"/>
+                    <button name="button_done" string="Return Books" class="oe_highlight"
+                            attrs="{'invisible': [('state','in',['new','done'])]}"/>
+                    <!-- 这会在头部添加一个阶段管道组件，它在表示文档当前所在生命周期点的字段上使用了statusbar组件。
+                    通常是一个状态选项字段或阶段many-to-one字段。这两类字段在 Odoo 核心模块中多次出现。
+                    clickable属性让用户可通过点击状态条来修改文档阶段。一般需要开启它，但有时又不需要，
+                    比如需要对工作进行更强的控制，并且要求用户仅使用可用的操作按钮来进入下一步。
+                    这种方法允许在切换阶段时进行指定验证。
+
+                    对阶段使用状态条组件时，我们可将很少使用的阶段隐藏(折叠)在 More 阶段组中，
+                    但是如果当前阶段是隐藏的阶段时就会自动显示出来。
+                    对应的阶段模型必须要有一个标记来配置需隐藏的阶段，通常命名为 fold。
+                    然后statusbar组件使用 options 属性来将这一字段名提供给fold_field选项-->
+                    <field name="stage_id" widget="statusbar" clickable="True" options="{'fold_field': 'fold'}"/>
+                    <!--
+                    状态是一个包含了流程中相当稳定步骤的选择列表，如新建、处理中和完成。
+                    终端用户无法对其进行配置，因为它是静态的，更易于在业务逻辑中使用。
+
+                    阶段引入的时间要晚于状态。两者现在共存，在 Odoo 内核的趋势是使用阶段来替代状态。
+                    但如前所述，状态仍提供一些阶段所不具备的功能。
+
+                    可通过将阶段映射到状态中来同时获得两者的优势。在借阅模型中我们通过向借阅阶段中添加一个状态字段来实现，
+                    借阅文档通过一个关联字段来使用状态。使用状态代替阶段的模型中，我们也可以使用进度条管道。
+                    这种情况下要在进度条中列出状态，需要使用statusbar_visible属性来替换fold_field选项。
+
+                    <field name="state" widget="statusbar" clickable="True" statusbar_visible="new,open,done"/>
+                    -->
+                </header>
                 <sheet>
-                    <group>
-                        <field name="member_id"/>
-                        <field name="request_date"/>
-                        <field name="user_id"/>
-                        <field name="line_ids"/>
-                        <field name="stage_id"/>
+                    <div name="button_box" class="oe_button_box">
+                        <!--智能按钮必须带有class=”oe_stat_button” CSS样式，并应使用 icon 属性来带有一个图标。
+                            class=”oe_stat_button”渲染的不是普通按钮而是一个矩形-->
+                        <button class="oe_stat_button"
+                                icon="fa_task" help="Other checkouts pending return."
+                                type="action" name="%(action_other_checkouts_button)d"
+                                context="{'default_member_id': member_id}">
+                            <field name="num_other_checkouts" string="To Return" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <field name="member_image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="member_id" class="oe_edit_only"/>
+                        <h1><field name="member_id"/></h1>
+                        <h3>
+                            <span class="oe_read_only">By </span>
+                            <label for="user_id" class="oe_edit_only"/>
+                            <field name="user_id" class="oe_inline"/>
+                        </h3>
+                    </div>
+                    <!--自odoo11开始，string 属性不能作为继承的锚点，因为在应用继承前会对其进行翻译。
+                        这时应使用 name 属性来代替它。-->
+                    <group name="group_top">
+                        <group name="group_col1">
+                            <field name="user_id"/>
+                            <field name="request_date"/>
+                            <field name="checkout_date"/>
+                        </group>
+                        <group name="group_col2">
+                            <field name="state"/>
+                            <field name="closed_date" attrs="{'invisible':[('state', 'in', ['new', 'open'])]}"/>
+                        </group>
                     </group>
+                    <notebook>
+                        <!--accesskey代表HTML元素的快建访问键，按住Alt+该键即可快速访问该元素-->
+                        <page string="Borrowed Books" name="page_lines" accesskey="z">
+                            <field name="line_ids">
+                                <tree>
+                                    <field name="book_id" />
+                                </tree>
+                                <form>
+                                    <field name="book_id" />
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                    <!--字段属性：
+                        nolabel=”True”阻止自动字段标签的展示。
+                        仅对<group>元素内的字段有作用，通常与<label for=”…”>元素一起使用。
+
+                        filename用于二进制字段，它是用于存储上传文件名的模型字段的名称。
+                        -->
+
+                    <!--字段组件：
+                        数字字段：
+                        handle在列表视图中作为一个排序字段，显示一个句柄来让我们可以拖放进行自定义排序，参考菜单列表视图。
+                        float_time将一个浮点型字段格式化为带有小时和分钟的值。如1.25会显示为01:15
+                        monetary将一个浮点型字段显示为货币金额。它与currency_id字段一起使用，
+                                还可以通过options=”{‘currency_field’: ‘currency_id’}”来使用另一个字段名
+                        progressbar将一个浮点值显示为进度条百分比，有助于将字段展示为完成率,但是不可编辑。
+                        percentage组件会把浮点数乘以100转换为带%的形式,还可编辑,。
+                        percentpie组件用于将浮点数转为带%的圆形百分比（但不乘以100），但是不可编辑。
+
+                        对于关联和选择项字段，
+                        many2many_tags将值显示为按钮标签列表
+                        many2many_checkboxes将选项值显示为一个复选框列表
+                        selection对many-to-one字段使用选择字段组件
+                        radio以单选按钮显示选择字段选项
+                        priority将选项字段显示为一个可点击星形列表。选择项目通常是数值，常用在列表视图拖动排序。
+                        state_selection将看板状态选择列表显示为信号灯。普通状态显示为灰色，完成显示为绿色，其它状态显示为红色。
+                        pdf_viewer是一个二进制字段(在 Odoo 12中引入),用于预览PDF文档，所以上传文件时也只能选到PDF。
+                    -->
+
+                    <!--按钮：
+                        args属性：在类型为 object 时用于向方法传递额外的参数，须是在形成方法调用参数的记录 ID 之后所添加的纯静态 JSON 参数。
+                        context属性：在上下文中添加值，可在窗口操作或 Python 代码方法调用之后产生效果。
+                        confirm属性：在运行相关操作之前显示确认消息框，显示的内容是属性中分配的文本。special=”cancel”用于向导表单。
+                        icon属性：是按钮所显示的图标。
+
+                        智能按鈕：
+                        在右上角版块中带有智能按钮(smart button)也很常见。智能按钮显示为带有数据指示的矩形，在点击时可进入。
+                        Odoo 中使用的 UI样式是在放置智能按钮的地方带有一个隐藏框，按钮框通常是<sheet>的第一个元素，
+                        在<div class=”oe_title”>元素前(以及头像)，类似这样：
+                        <div name="button_box" class="oe_button_box">
+                            Smart buttons will go here...
+                        </div>
+                    -->
                 </sheet>
 
                 <div class="oe_chatter">
@@ -33,6 +158,88 @@
                     <field name="message_ids" widget="mail_thread"/>
                 </div>
             </form>
+        </field>
+    </record>
+
+    <record id="view_filter_checkout" model="ir.ui.view">
+        <field name="model">library.checkout</field>
+        <field name="arch" type="xml">
+            <search>
+                <!--字段元素可使用如下属性：
+                    name标识要使用的字段
+                    string用作标签文本，它会替换默认值
+                    operator用于修改默认的运算符(默认值：数值字段=，其它字段类型ilike)
+                    filter_domain设置搜索使用的特定域表达式，为 operator 属性提供一种灵活的替代方式。
+                    搜索文本在表达式中通过 self 引用。一个简单示例：filter_domain=”[(‘name’, ‘ilike’, self)]”
+                    groups让对该字段的搜索仅向安全组内成员开放，它的值是一个逗号分隔的XML ID列表
+                过滤元素有以下可用属性：
+
+                    name用作后续继承/扩展或通过窗口操作启用的标识符。这不是必填项，但包含该属性是一个不错的编码习惯。
+                    string是过滤器显示的标签文本，必填
+                    domain是加入当前域的域表达式
+                    context是加入当前上下文的上下文字典。通常使用group_id作为键，用于对记录分组的字段名作为值
+                    groups让该字段的搜索仅对安全组列表(XML IDs)成员开放-->
+                <field name="member_id" />
+                <field name="user_id" />
+                <filter name="filter_not_done"
+                    string="To Return"
+                    domain="[('state','=','open')]" />
+                <!--两个过滤器可以分别被启用并以 OR运算符连接。以<separator />元素分隔的整块过滤器以 AND 运算符连接。-->
+                <filter name="filter_my_checkouts"
+                    string="My Checkouts"
+                    domain="[('user_id', '=', uid)]" />
+                <filter name="group_user"
+                    string="By Member"
+                    context="{'group_by': 'member_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="view_calendar_checkout" model="ir.ui.view">
+        <field name="model">library.checkout</field>
+        <!--date_start是开始日期字段（必填）
+        date_end是结束日期字段（可选）
+        date_delay是天数字段，用于代替date_end
+        all_day传入一个布尔字段名，用于标识全天活动。这类活动会忽略时长。
+        color用于为一组日历项添加颜色。每个不同值都会被分配一种颜色，它的所有项都会显示为相同颜色。
+        mode是日历视图的默认显示模块，可以是天、周或月。-->
+        <field name="arch" type="xml">
+            <calendar date_start="request_date" color="user_id" mode="month">
+                <field name="member_id" />
+                <field name="stage_id" />
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_pivot_checkout" model="ir.ui.view">
+        <field name="model">library.checkout</field>
+        <field name="arch" type="xml">
+            <!--透视表在 Odoo 8中就已存在，作为一个图表视图功能。
+            在 Odoo 9中，它成为一个独立的视图类型。同时也增强了透视表功能、优化了透视表数据的获取。
+            数据累加仅对数据库中存储的字段可用。
+            name像其它视图一样标识图表中使用的字段
+            type是指如何使用字段，行分组(默认)、度量(measure)或列（仅针对透视表，用于列分组）
+            interval用于日期字段，是对时间数据的分组间隔：按天、按周、按月、按季度或按年-->
+            <pivot>
+                <field name="stage_id" type="col" />
+                <field name="member_id" />
+                <field name="request_date" interval="week" />
+                <field name="num_books" type="measure" />
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_graph_checkout" model="ir.ui.view">
+        <field name="model">library.checkout</field>
+        <field name="arch" type="xml">
+            <!--图表视图元素可带有一个type属性，值可为 bar(默认), pie或line。
+            对于 bar，可使用额外的stacked=”True”属性来让柱状图叠放起来。图表使用两种类型字段：
+            type=”row”是默认值，设置累加值的条件
+            type=”measure”用于作为实际累加值的度量字段-->
+            <graph type="bar">
+                <field name="stage_id" />
+                <field name="num_books" type="measure" />
+            </graph>
         </field>
     </record>
 
@@ -45,4 +252,5 @@
             </tree>
         </field>
     </record>
+
 </odoo>

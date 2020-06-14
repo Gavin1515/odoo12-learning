@@ -16,11 +16,20 @@
                             <field name="author_ids" widget="many2many_tags"/>
                             <field name="publisher_id"/>
                             <field name="date_published"/>
+                            <field name="avg_rating" widget="float_time"/>
+                            <field name="book_type"/>
+                            <field name="last_borrow_date"/>
+                            <field name="publisher_country_id"/>
+                            <field name="notes"/>
                         </group>
                         <group>
                             <field name="isbn"/>
                             <field name="active"/>
                             <field name="image" widget="image"/>
+                            <field name="price"/>
+                            <field name="currency_id"/>
+                            <field name="copies"/>
+                            <field name="descr"/>
                         </group>
                     </group> 
                 </sheet>
@@ -38,6 +47,8 @@
                 <field name="author_ids" widget="many2many_tags"/>
                 <field name="publisher_id"/>
                 <field name="date_published"/>
+                <field name="copies" widget="handle"/>
+                <field name="avg_rating" widget="percentage"/>
             </tree>
         </field>
     </record>

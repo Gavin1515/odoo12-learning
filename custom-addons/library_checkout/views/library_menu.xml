@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!--使用activity视图只需在窗口操作的 view_code 属性的视图列表中添加活动视图类型即可。
+    实际的视图定义会自动生成，我们也可以手动进行添加，唯一的选项是修改 string 属性，但在UI 中并不使用。-->
     <act_window id="action_library_checkout" name="Checkouts"
-                res_model="library.checkout" view_mode="tree,form"/>
+                res_model="library.checkout" view_mode="tree,form,activity,calendar,pivot,graph"/>
     <menuitem id="menu_library_checkout" name="Checkout"
               parent="library_app.menu_library" action="action_library_checkout"/>
 </odoo>

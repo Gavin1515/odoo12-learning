@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_kanban_checkout" model="ir.ui.view">
+        <field name="name">Checkout Kanban</field>
+        <field name="model">library.checkout</field>
+        <field name="arch" type="xml">
+            <!--kanban属性：
+            default_group_by设置默认列分组使用的字段
+            default_order设置看板项默认使用的排序
+            quick_create=”false”禁用了每列顶部的快速创建选项（大的加号符号），快速创建只需提供标题描述即可创建新项。false是 JavaScript 的语法，必须是小写字母。
+            class为渲染看板视图的根元素添加 CSS 类。相关类是_kanban_small_column，让列比默认的更加紧湊。其它类可由我们模块的 CSS 文件来进行提供。
+            group_create, group_edit, group_delete和quick_create_view可设置为 false 来禁用看板列上对应的操作。如group_create=”false”删除右侧添加新列的按钮。
+            on_create用于创建用户点击左上角 Create 按钮时弹出的自定义简单表单视图窗口。应为相应的表单视图添加<module>.<xml_id>值。-->
+            <kanban default_group_by="kanban_state" class="o_kanban_small_column">
+                <!--只有在 QWeb 表达式中明确使用的字段才需要在这里声明，用以保证从服务端抓取它们的数据。
+                QWeb引擎在处理模板前，仅会在视图中查找 <field name=”…”>来从模型中获取数据。QWeb的属性通常使用不会被检测到的record.field引用方式。
+                正因为如此，需在<templates>之前包含这些字段来让模板处理时有相应字段值可以使用。-->
+                <field name="stage_id"/>
+                <field name="id"/>
+                <field name="color"/>
+                <field name="kanban_state"/>
+                <field name="priority"/>
+                <field name="message_partner_ids"/>
+                <!--从odoo11新增的<progressbar>有如下属性：
+                field是对列中各项进行颜色分组的字段名
+                colors是一个字典，将分组字段值与以下三种颜色分别进行映射：danger (红色), warning (黄色)或success (绿色)。
+                sum_field是一个可选项，用于选取整列汇总的字段名。如未设置，会使用各项的计数值。-->
+                <progressbar field="kanban_state" colors='{"done": "success", "blocked": "danger"}' />
+                <!--<templates>元素包含一个或多个QWeb模板来生成要使用的 HTML 片断。必须要有一个名为kanban-box的模板，它渲染看板卡片。
+                还可以添加其它模板，通常用于定义主模板中复用到的 HTML 片断。这些模板使用标准的 HTML 和 QWeb 模板语言。
+                QWeb提供了一些特殊指令，用于处理动态生成最终展示的 HTML。-->
+                <templates>
+                    <!--QWeb指令常使用运算的表达式来根据当前记录值生成不同的结果。有两种不同的QWeb实现：客户端JavaScript和服务端Python。
+                    报表和网页使用服务端QWeb的 Python 实现。看板视图使用客户端JavaScript实现。也就是说看板视图中的QWeb表达式应使用
+                    JavaScript语法书写，而不是 Python。-->
+
+                    <!--QWeb JavaScript 运行上下文：
+                    raw_value是由服务端read()方法返回的值，因此在条件表达式中更适用
+                    value根据用户设置来格式化，用于在用户界面中的显示。常用于date/datetime, float/monetary和关联字段。
+                    QWeb运行上下文还可在JavaScript网页客户端中引用。要擅用这些需要对网页客户端结构有很好的理解，但这里我们不会进行深入介绍。
+                    要进行引用 ，QWeb表达式运行中有以下标识符可以使用：
+                    widget是对当前KanbanRecord() 组件对象的引用 ，用于在看板卡片中渲染当前记录。它会暴露一些帮助函数供我们使用。
+                    record是widget.record的简写形式，使用点号标记来提供对可用字段的访问。
+                    read_only_mode表示当前视图是否为读模式（而非编辑模式）。它是widget.view.options.read_only_mode的简写形式。
+                    instance是对全部网页客户端实例的一个引用
+
+                    表达式中可使用的比较符号：
+                    lt是小于
+                    lte是小于等于
+                    gt是大于
+                    gte是大于等于-->
+
+                   <!-- 看板卡片主内容区域在kanban-box模板内定义-->
+                    <t t-name="kanban-box">
+                        <div t-attf-class="
+                            oe_kanban_color_#{kanban_getcolor(record.color.raw_value)}
+                            oe_kanban_global_click">
+                            <div class="o_dropdown_kanban dropdown">
+                                <!-- o-no-caret样式是隐藏按钮旁边的下拉图标
+                                    data-display="static" 是在看板列内显示下拉菜单，而不是显示到列外-->
+                                <a class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" role="button"
+                                   aria_label="Dropdown menu" title="Dropdown menu" data-display="static" href="#">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <t t-if="widget.editable">
+                                        <a role="menuitem" type="edit" class="dropdown-item">Edit</a>
+                                    </t>
+                                    <t t-if="widget.deletable">
+                                        <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                                    </t>
+                                    <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_body">
+                                <div>
+                                    <strong>
+                                        <a type="open"><field name="member_id" /></a>
+                                    </strong>
+                                </div>
+                                <ul>
+                                   <!-- t-attf-指令使用字符串替换动态生成标签属性。这让像 URL 地址或 CSS 类名这类较大字符串中的部分内容可动态生成。
+                                   可以使用{{}}或者#{}符号括起来，里面还可以使用JS的函数和表达式-->
+                                    <li t-attf-class="oe_kanban_text_{{record.priority.raw_value lt 2? 'black':'red'}}">
+                                        <field name="user_id" />
+                                    </li>
+                                    <!--也可以用t-set指令来实现：
+                                    <t t-set="red_or_black"
+                                        t-value="record.priority.raw_value gte '2' ? 'oe_kanban_text_red' :''" />
+                                    <li t-att-class="red_or_black">
+                                        <field name="user_id" />
+                                    </li>-->
+
+                                    <li><field name="request_date" /></li>
+                                    <!--t-if指令在客户端渲染看板视图时需传入在 JS 中运行的表达式。标签和其内容仅在条件运行值为true 时才会渲染。
+                                    可通过t-elif和t-else来支持else if和else条件语句。
+                                    Javascript表达式中，AND和OR的运算符分别为&&和 ||。但在 XML 中不支持&符号，我们可以使用 and 和 or 运算符来规避这一问题。-->
+                                    <t t-if="record.num_books.raw_value == 0">
+                                        <li>No books.</li>
+                                    </t>
+                                    <t t-elif="record.num_books.raw_value gt 9">
+                                        <li>A lot of books!</li>
+                                    </t>
+                                    <t t-else="">
+                                        <li><field name="num_books" /> books.</li>
+                                    </t>
+                                </ul>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="priority" widget="priority"/>
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                    <!--变量中还可分配 HTML内容，示例如下：
+                                        显示一个日历图标-->
+                                    <t t-set="calendar_sign">
+                                        <i class="fa fa-calendar" />
+                                    </t>
+                                    <!--如果确定源数据是安全的，可以无需转义使用t-raw 来渲染原始值。
+                                        出于安全考虑，应尽量避免使用t-raw。它应严格用于输出特别准备不包含用户数据的HTML 数据，
+                                        或者是已明确对 HTML 特殊字符转义的用户数据。
+                                    -->
+                                    <t t-raw="calendar_sign" />
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="kanban_state" widget="kanban_state_selection"/>
+                                    <!--这里使用了kanban_image()帮助函数来获取src属性的值。
+                                    kanban_image() Javascript函数从 Odoo 模型中获取表单并在网页中渲染。有以下属性：
+                                        获取图像的模型
+                                        包含图像的字段
+                                        获取的记录 ID -->
+
+                                    <!--t-att- QWeb指令通过运行表达式动态生成属性值。在表达式运行的结果值为假时，就不会渲染该属性。-->
+                                    <img t-att-src="kanban_image('library.checkout','member_image',record.id.raw_value)"
+                                         t-att-title="record.member_id.value"
+                                         t-att-alt="record.member_id.value"
+                                         width="24" height="24" class="oe_kanban_avator"/>
+                                    <!--和t-as配合使用的还有一下变量，它们以t_as 中定义的变量名为前缀
+                                    rec_index是迭代索引，从0开始
+                                    rec_size是集合中的元素数量
+                                    rec_first在迭代的第一个元素中为真
+                                    rec_last在迭代的最后一个元素中为真
+                                    rec_even在索引为偶数时为真
+                                    rec_odd在索引为奇数时为真
+                                    rec_parity根据当前索引为odd或even
+                                    rec_all表示进行迭代的对象
+                                    rec_value在迭代{key:value} 字典时，存储value (rec存储键名)-->
+                                    <t t-call="follower_avatars">
+                                        <!--调用模板时传递参数-->
+                                        <t t-set="arg_max" t-value="3"/>
+                                    </t>
+                                </div>
+                            </div>
+                            <!--渲染值 – t-esc和t-raw
+                            我们使用了<field>元素来渲染值，但也可以无需<field>标签直接显示字段值。t-esc指令运行表达式并将其渲染为转义后的 HTML 值，如下所示：
+                            <t t-esc="record.message_partner_ids.raw_value" />
+                            -->
+                            <div class="oe_clear" />
+                        </div>
+                    </t>
+
+                    <!--QWeb模板可作为可复用的 HTML 片段插入到其它模板中。
+                    我们无需重复相同的 HTML 代码块，可以设计构成部分来组成更为复杂的用户界面视图，可复用的模板在<templates>标签中定义.
+                    这些模板可通过t-call来进行包含，在当前看板视图、相同模块的其它地方以及其它插件模块中均可。
+                    调用其它插件模块中定义的模板，和视图类似，我们需要使用完整的module.name标识符。
+                    -->
+                    <t t-name="follower_avatars">
+                        <t t-foreach="record.message_partner_ids.raw_value.slice(0,arg_max)" t-as="rec">
+                            <img t-att-src="kanban_image('res.partner','image_small',rec)"
+                                 class="oe_avator" width="24" height="24" alt=""/>
+                        </t>
+                        <!--t-call元素内的整个内容可通过0（数字零）这个魔法变量在子模板中使用。
+                        不使用参数变量，我们还可以定义代码片断并在子模板中通过<t t-raw=”0″ />使用。
+                        这对以模块化的方式创建布局、合并/嵌套 QWeb 模板尤为有用。
+                        <t t-raw=”0″ />
+                        -->
+                    </t>
+
+                    <!--前面我们看到t-att-NAME和t-attf-NAME样式的动态标签属性，此外还可以使用固定的t-att指令。
+                        它接收键值对字典或pair（两个元素的列表）。
+                        使用如下映射：
+                        <p t-att="{'class': 'oe_bold', 'name': 'Hello'}" />
+                        将生成如下结果：
+                        <p class="oe_bold" name="Hello" />
+                        使用如下 pair：
+                        <p t-att="['class', 'oe_bold']" />
+                        将生成如下结果：
+                        <p class="oe_bold" />
+                    -->
+
+                    <!--QWeb的继承和视图一样的继承方式-->
+
+                    <!--自定义CSS和Javascript：
+                    1.先在static目录中添加css和javascript文件。
+                    2.在views目录中新建一个xml文件引入css和javascript。示例如下：
+                        <odoo>
+                            <template id="assets_backend" inherit_id="web.assets_backend"
+                                name="Library Checkout Kanban Assets">
+                                <xpath expr="." position="inside">
+                                    <link rel="stylesheet"
+                                        href="/library_checkout/static/src/css/checkout_kanban.css" />
+                                    <script type="text/javascript"
+                                        src="/library_checkout/static/src/js/checkout_kanban.js">
+                                    </script>
+                                </xpath>
+                            </template>
+                        </odoo>
+                    3.在_manifest__.py中引入xml文件。
+                    -->
+
+
+                </templates>
+
+            </kanban>
+        </field>
+    </record>
+</odoo>

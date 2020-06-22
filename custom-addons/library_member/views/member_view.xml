@@ -20,6 +20,7 @@
                     <field name="name"/>
                     <field name="email" widget="email"/>
                     <field name="card_number"/>
+                    <field name="partner_id"/>
                 </group>
 
                 <!-- mail mixin fields -->

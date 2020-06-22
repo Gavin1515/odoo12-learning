@@ -14,6 +14,7 @@
         'data/library_checkout_stage.xml',
         'views/library_menu.xml',
         'views/checkout_view.xml',
+        'views/checkout_kanban_view.xml',
         'wizard/checkout_mass_message_wizard.xml',
     ],
 }

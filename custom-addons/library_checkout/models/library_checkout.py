@@ -44,6 +44,22 @@ class Checkout(models.Model):
     closed_date = fields.Date(readonly=True)
     member_image = fields.Binary(related='member_id.partner_id.image')
     num_books = fields.Integer(compute='_compute_num_books', store=True)
+    # 让用户组织他们的工作项，标记什么应优先处理
+    priority = fields.Selection(
+        [('0', 'Low'),
+         ('1', 'Normal'),
+         ('2', 'High')],
+        'Priority',
+        default='1')
+    # 标记是否应移向下一阶段或因某种原因原地不动
+    kanban_state = fields.Selection(
+        [('normal', 'In Progress'),
+         ('blocked', 'Blocked'),
+         ('done', 'Ready for next stage')],
+        'Kanban State',
+        default='normal')
+    # 用于存储看板卡片显示的颜色，并可通过看板视图中的颜色拾取器菜单设置
+    color = fields.Integer(string='Color Index')
 
     @api.depends('line_ids')
     def _compute_num_books(self):

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+     <record id="paperformat_euro_landscape" model="report.paperformat">
+        <field name="name">European A4 Landscape</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">23</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+    <!--name 属性标识所使用的模板。与其它标识符引用不同，name 属性中需要添加模块前缀，
+        我们必须使用完整的引用名称<module_name>.<identifier_name>。-->
+    <report id="action_report_library_book"
+            string="Library Books"
+            model="library.book"
+            report_type="qweb-pdf"
+            name="library_app.report_library_book_template"/>
+
+    <template id="report_library_book_template">
+        <!--Odoo 11中的修改: 对报表的支持布局从report 模块移到了 web 模块中。-->
+        <t t-call="web.html_container">
+            <!--web.html_container模板进行支持 HTML 文档的基本设置。web.external_layout模板使用相应公司的相关设置处理报表头部和底部。
+                external_layout模板可由用户自定义，Odoo 11引入了这一选项，在Settings > General Settings菜单中，
+                然后相关内容在Business Documents > Document Template版块：-->
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <!--与看板视图不同，报表中的QWeb模板在服务端进行渲染，因此使用Python QWeb来实现。我们可以将其看作相同规格的两种实现，需要注意其中的一些区别。
+                        首先这里的QWeb表达式由 Python 语法运行，而非JavaScript。对于最简的表达式几乎没有区别，但更为复杂的运算则可能存在差别。
+
+                        表达式运行上下文也不同，对于报表可使用如下变量：
+                        docs是要打印记录的可迭代集合
+                        doc_ids是一个要打印记录的 ID 列表
+                        doc_model指定记录的模型，如library.book
+                        time是对Python时间库的引用
+                        user是运行报表的用户记录
+                        res_company是当前用户的公司记录
+
+                        可使用t-field来引用字段值，并可使用t-options来进行补充指定渲染字段内容的具体组件。
+                        在此前的 Odoo 版本中，使用的是t-field-options属性，但在 Odoo 11中淘汰了该属性，改用t-options属性。
+
+                        官方文档中并没有涉及QWeb支持的组件及其选项。所以当前对其做进一步的了解只能是通过阅读相应源码。
+                        可访问ir_qweb_fields.py，查找继承ir.qweb.field的类，get_available_options() 方法可有助了解支持的选项。-->
+                    <div class="container">
+                        <!--内容的布局使用了Twitter Bootstrap的HTML网格系统。总的来说Bootstrap使用12列的网格布局.
+                            现在Odoo12使用Bootstrap 4，它对此前 Odoo 版本中使用的Bootstrap 3并没有保持向后兼容。
+                            对于从Bootstrap 3改为Bootstrap 4的小技巧，可参照 Odoo 中关于这一话题的 Wiki 页面:
+                            https://github.com/odoo/odoo/wiki/Tips-and-tricks:-BS3-to-BS4-->
+                        <div class="row bg-primary">
+                            <!--可使用<div class=”row”>来添加行。每行中还有多个单元格，分别占用不同列数，总计应为12列。
+                                每个单元格可通过<div class=”col-N”> 来进行定义，其中 N 表示占用列的数量。
+
+                                Bootstrap 4 在其大部分构件中使用了CSS弹性盒子布局，已知wkhtmltopdf对弹性盒子的功能并不都能很好的支持。
+                                因此如果有些地方效果不对，请尝试使用其它元素或方法，如HTML表格。-->
+                            <div class="col-3">Title</div>
+                            <div class="col-2">Publisher</div>
+                            <div class="col-2">Date</div>
+                            <div class="col-3">Publisher Address</div>
+                            <div class="col-3">Authors</div>
+                        </div>
+                        <t t-set="author_count" t-value="0"/>
+                        <t t-foreach="docs" t-as="o">
+                            <t t-set="author_count" t-value="author_count + len(o.author_ids)"/>
+                            <div class="row">
+                                <div class="col-3">
+                                    <h4><span t-field="o.name"/></h4>
+                                    (Accum. authors: <t t-esc="author_count" />)
+                                </div>
+                                <div class="col-2">
+                                    <span t-field="o.publisher_id"/>
+                                </div>
+                                <div class="col-2">
+                                    <span t-field="o.date_published" t-options="{'widget': 'date'}"/>
+                                </div>
+                                <div class="col-3">
+                                    <!--no_marker=”true”禁用的地址图标如上所示-->
+                                    <span t-field="o.publisher_id" t-options="{
+                                    'widget': 'contact', 'fields': ['address','email','phone','website'],
+                                    'no_marker': false}"/>
+                                </div>
+                                <div class="col-2">
+                                    <ul class="list_unstyled">
+                                        <t t-foreach="o.author_ids" t-as="author">
+                                            <li class="media">
+                                                <span t-field="author.image_small" t-options="{'widget': 'image'}"/>
+                                                <div class="media-body">
+                                                    <p class="mt-0">
+                                                        <span t-field="author.name"/>
+                                                    </p>
+                                                </div>
+                                            </li>
+                                        </t>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+                        <!--汇总行-->
+                        <div class="row">
+                            <div class="col-3">
+                                Count：<span t-esc="len(docs)"/>
+                            </div>
+                            <div class="col-2"/>
+                            <div class="col-2"/>
+                            <div class="col-3"/>
+                            <div class="col-2"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    <!--如果要翻译qweb报表。可以使用t-lang属性来实现，在t-call调用报表模板时传入-->
+</odoo>

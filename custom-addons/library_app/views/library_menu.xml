@@ -15,4 +15,15 @@
               parent="menu_library"
               action="action_library_book"
     />
+
+    <act_window id="action_library_book_report"
+        name="Book Report"
+        res_model="library.book.report"
+        view_mode="tree,form"
+    />
+    <menuitem id="menu_library_book_report"
+        name="Book Report"
+        parent="menu_library"
+        action="action_library_book_report"
+    />
 </odoo>

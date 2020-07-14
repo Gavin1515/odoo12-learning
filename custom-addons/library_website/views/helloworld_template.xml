@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--<template>实际上是一种简写形式，它声明<record>将数据以type=”qweb”类型加载到ir.ui.view模型中。-->
+    <template id="helloworld" name="Hello World Template">
+        <t t-call="website.layout">
+            <h1>Hello again World!</h1>
+        </t>
+    </template>
+</odoo>

@@ -14,6 +14,7 @@
               name="Books"
               parent="menu_library"
               action="action_library_book"
+              sequence="10"
     />
 
     <act_window id="action_library_book_report"
@@ -22,8 +23,9 @@
         view_mode="tree,form"
     />
     <menuitem id="menu_library_book_report"
-        name="Book Report"
-        parent="menu_library"
-        action="action_library_book_report"
+              name="Book Report"
+              parent="menu_library"
+              action="action_library_book_report"
+              sequence="50"
     />
 </odoo>

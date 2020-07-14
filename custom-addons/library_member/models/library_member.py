@@ -12,7 +12,7 @@ class Member(models.Model):
 
     card_number = fields.Char(string='Card Number')
     '''
-        delegate属性指定partner_id是一个用于代理继承的字段，他是odoo8子女增的特性，
+        delegate属性指定partner_id是一个用于代理继承的字段，他是odoo8新增的特性，
         作用同_inherits = {‘res.partner’: ‘partner_id’}
         代理继承的特点：
         1.子模型继承了父模型的数据结构，但是子模型的数据库中除了本身的字段外，并不存储父模型的字段；

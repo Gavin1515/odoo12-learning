@@ -5,5 +5,10 @@
     <act_window id="action_library_checkout" name="Checkouts"
                 res_model="library.checkout" view_mode="kanban,tree,form,activity,calendar,pivot,graph"/>
     <menuitem id="menu_library_checkout" name="Checkout"
-              parent="library_app.menu_library" action="action_library_checkout"/>
+              parent="library_app.menu_library" action="action_library_checkout" sequence="40"/>
+
+    <act_window id="action_library_checkout_stage" name="Stages"
+                res_model="library.checkout.stage" view_mode="tree,form"/>
+    <menuitem id="menu_library_checkout_stage" name="Stage"
+              parent="library_app.menu_library" action="action_library_checkout_stage" sequence="30"/>
 </odoo>

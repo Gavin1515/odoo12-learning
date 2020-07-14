@@ -9,5 +9,6 @@
     <menuitem id="menu_member_menu" name="Members"
               parent="library_app.menu_library"
               action="action_library_member"
+              sequence="20"
     />
 </odoo>

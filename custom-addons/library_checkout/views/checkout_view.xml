@@ -257,4 +257,39 @@
         </field>
     </record>
 
+    <record id="view_tree_stage" model="ir.ui.view">
+        <field name="name">Stage Tree</field>
+        <field name="model">library.checkout.stage</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="sequence" />
+                <field name="fold" />
+                <field name="active" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_form_stage" model="ir.ui.view">
+        <field name="name">Stage Form</field>
+        <field name="model">library.checkout.stage</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="fold"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
 </odoo>
